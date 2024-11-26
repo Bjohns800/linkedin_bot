@@ -108,21 +108,31 @@ def save_webpage_as_pdf(url):
             job_title_element = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "h1.t-24.t-bold.inline"))
             )
-            job_title = job_title_element.text
+            job_title = job_title_element.text.strip()
             print(f"Job Title: {job_title}")
         except Exception as e:
             print("Failed to get job title:", e)
             job_title = "Unknown Job Title"
 
-        # Extract the company name
+        # Extract the company name by navigating to its profile page
         try:
+            # Locate and click the company link
+            company_link = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "div.job-details-jobs-unified-top-card__company-name a"))
+            )
+            company_link.click()
+            
+            # Wait for the company profile page to load and extract the company name
             company_name_element = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div.job-details-jobs-unified-top-card__company-name a.app-aware-link"))
+                EC.presence_of_element_located((By.CSS_SELECTOR, "h1.org-top-card-summary__title"))
             )
             company_name = company_name_element.text.strip()
-            print(f"Company Name: {company_name}")
+            print(f"Extracted Company Name: {company_name}")
+
+            # Navigate back to the original job posting page
+            driver.back()
         except Exception as e:
-            print("Failed to get company name:", e)
+            print("Failed to extract company name from profile page:", e)
             company_name = "Unknown Company"
 
         # Sanitize the job title and company name for the file name
@@ -152,7 +162,7 @@ def save_webpage_as_pdf(url):
         
         # Decode the base64 PDF data
         pdf_data = base64.b64decode(result['data'])
-        
+         
         # Write the decoded data to a PDF file
         with open(output_path, 'wb') as file:
             file.write(pdf_data)
@@ -170,19 +180,6 @@ if __name__ == "__main__":
     
     if cleaned_url:
         save_webpage_as_pdf(cleaned_url)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
